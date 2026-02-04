@@ -18,9 +18,69 @@ Create a `.env` file in the root directory (see `.env.example`):
 ZOHOMAIL_CLIENT_ID=your_client_id
 ZOHOMAIL_CLIENT_SECRET=your_client_secret
 ZOHOMAIL_USER_ID=your_user_id
+ZOHOMAIL_REFRESH_TOKEN=your_refresh_token
+ZOHOMAIL_FOLDER_ID=your_default_folder_id
 ```
 
-## Usage
+## Library Usage
+
+### 1. Creating the Client
+
+The easiest way to create a client is from environment variables:
+
+```ruby
+require 'zohomail_client'
+
+# Automatically loads .env and refreshes the access token using ZOHOMAIL_REFRESH_TOKEN
+client = ZohomailClient.client_from_env
+```
+
+Alternatively, you can provide the access token and user ID manually:
+
+```ruby
+client = ZohomailClient::Client.new(
+  access_token: 'your_access_token',
+  user_id: 'your_user_id'
+)
+```
+
+### 2. Listing Messages
+
+```ruby
+# List messages (default: 10 messages from Inbox)
+response = client.list_messages
+
+# List messages with options
+response = client.list_messages(folder_id: "123456789", limit: 5)
+
+response["data"].each do |message|
+  puts "Subject: #{message['subject']}"
+  puts "From: #{message['sender']}"
+  puts "ID: #{message['messageId']}"
+  puts "---"
+end
+```
+
+### 3. Fetching Message Content
+
+```ruby
+# Fetch content using folder_id and message_id
+response = client.get_message_content("123456789", "987654321")
+
+puts "Content: #{response['data']['content']}"
+```
+
+### 4. Sending an Email
+
+```ruby
+client.send_email(
+  to: "recipient@example.com",
+  subject: "Hello from Ruby",
+  content: "This is a test email sent via Zoho Mail API."
+)
+```
+
+## Command Line Usage
 
 ### 1. Authentication
 
@@ -60,7 +120,7 @@ To see your folders and their IDs:
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/zohomail_client.
+Bug reports and pull requests are welcome on GitHub at https://github.com/plerohellec/zohomail_client.
 
 ## License
 
