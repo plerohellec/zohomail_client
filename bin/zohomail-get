@@ -2,16 +2,31 @@
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "zohomail_client"
 
-if ARGV.length < 2
-  puts "Usage: zohomail-get <folder_id> <message_id>"
-  exit 1
-end
-
-folder_id = ARGV[0]
-message_id = ARGV[1]
-
 begin
   client = ZohomailClient.client_from_env
+
+  if ARGV[0] == "--help"
+    puts "Usage: zohomail-get <message_id> [folder_id]"
+    puts "If folder_id is not provided, it uses ZOHOMAIL_FOLDER_ID from .env"
+    exit 0
+  end
+
+  if ARGV.length == 1
+    message_id = ARGV[0]
+    folder_id = ENV["ZOHOMAIL_FOLDER_ID"]
+  elsif ARGV.length >= 2
+    folder_id = ARGV[0]
+    message_id = ARGV[1]
+  elsif ARGV.length == 0
+    puts "Usage: zohomail-get <message_id> [folder_id]"
+    puts "If folder_id is not provided, it uses ZOHOMAIL_FOLDER_ID from .env"
+    exit 1
+  end
+
+  unless folder_id
+    puts "Error: folder_id is missing. Provide it as an argument or set ZOHOMAIL_FOLDER_ID in .env"
+    exit 1
+  end
 
   puts "Fetching content for message #{message_id} in folder #{folder_id}..."
   response = client.get_message_content(folder_id, message_id)
