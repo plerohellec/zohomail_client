@@ -4,13 +4,14 @@ require "zohomail_client"
 
 if ARGV[0] == "--help"
   puts "Usage: zohomail-list [limit] [folder_id]"
+  puts "If folder_id is not provided, it uses ZOHOMAIL_FOLDER_ID from .env"
   exit 0
 end
 
 begin
   limit = (ARGV[0] || 10).to_i
-  folder_id = ARGV[1]
   client = ZohomailClient.client_from_env
+  folder_id = ARGV[1] || ENV["ZOHOMAIL_FOLDER_ID"]
 
   puts "Fetching recent emails (limit: #{limit}, folder: #{folder_id || 'all'})..."
   response = client.list_messages(limit: limit, folder_id: folder_id)
