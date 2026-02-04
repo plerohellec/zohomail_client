@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "zohomail_client"
+
+if ARGV.length < 2
+  puts "Usage: zohomail-get <folder_id> <message_id>"
+  exit 1
+end
+
+folder_id = ARGV[0]
+message_id = ARGV[1]
+
+begin
+  client = ZohomailClient.client_from_env
+
+  puts "Fetching content for message #{message_id} in folder #{folder_id}..."
+  response = client.get_message_content(folder_id, message_id)
+
+  if response["data"] && response["data"].is_a?(Hash) && response["data"]["content"]
+    puts "Content:"
+    puts "-" * 40
+    puts response["data"]["content"]
+    puts "-" * 40
+  elsif response["data"] && response["data"].is_a?(Array)
+    # This shouldn't happen based on docs, but just in case
+    puts "Received unexpected Array format."
+    if response["data"].first && response["data"].first["content"]
+      puts "First item content:"
+      puts response["data"].first["content"]
+    end
+  else
+    puts "Error or no content found: #{response}"
+    exit 1
+  end
+rescue ZohomailClient::Error => e
+  puts "Error: #{e.message}"
+  exit 1
+end

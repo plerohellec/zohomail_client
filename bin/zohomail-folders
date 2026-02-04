@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "zohomail_client"
+
+begin
+  client = ZohomailClient.client_from_env
+
+  puts "Fetching folders..."
+  response = client.list_folders
+
+  # puts "DEBUG Response: #{response.inspect}"
+
+  if response["data"] && response["data"].is_a?(Array)
+    puts "Folders:"
+    response["data"].each do |folder|
+      puts "ID: #{folder["folderId"]} - Name: #{folder["folderName"]}"
+    end
+  else
+    puts "No folders found or unexpected format: #{response}"
+  end
+rescue ZohomailClient::Error => e
+  puts "Error: #{e.message}"
+  exit 1
+end

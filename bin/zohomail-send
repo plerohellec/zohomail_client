@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "zohomail_client"
+
+if ARGV.length < 3
+  puts "Usage: zohomail-send <to> <subject> <content> [from]"
+  exit 1
+end
+
+to = ARGV[0]
+subject = ARGV[1]
+content = ARGV[2]
+from = ARGV[3]
+
+begin
+  client = ZohomailClient.client_from_env
+
+  puts "Sending email to #{to}..."
+  response = client.send_email(to: to, subject: subject, content: content, from: from)
+
+  if response.dig("status", "description") == "success"
+    puts "Email sent successfully!"
+    puts "Message ID: #{response.dig("data", "messageId")}"
+  else
+    puts "Error sending email: #{response}"
+    if response["data"] && response["data"]["moreInfo"]
+      puts "Details: #{response["data"]["moreInfo"]}"
+    end
+    exit 1
+  end
+rescue ZohomailClient::Error => e
+  puts "Error: #{e.message}"
+  exit 1
+end

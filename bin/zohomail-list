@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "zohomail_client"
+
+if ARGV[0] == "--help"
+  puts "Usage: zohomail-list [limit] [folder_id]"
+  exit 0
+end
+
+begin
+  limit = (ARGV[0] || 10).to_i
+  folder_id = ARGV[1]
+  client = ZohomailClient.client_from_env
+
+  puts "Fetching recent emails (limit: #{limit}, folder: #{folder_id || 'all'})..."
+  response = client.list_messages(limit: limit, folder_id: folder_id)
+
+  if response["data"] && response["data"].is_a?(Array)
+    puts "Recent Emails:"
+    response["data"].each do |msg|
+      puts "ID: #{msg["messageId"]}"
+      puts "From: #{msg["sender"]}"
+      puts "Subject: #{msg["subject"]}"
+      puts "Date: #{msg["receivedTime"]}"
+      puts "Folder ID: #{msg["folderId"]}"
+      puts "-" * 40
+    end
+  else
+    puts "No emails found or unexpected format."
+  end
+rescue ZohomailClient::Error => e
+  puts "Error: #{e.message}"
+  exit 1
+end

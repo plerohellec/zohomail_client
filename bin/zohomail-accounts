@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "zohomail_client"
+
+begin
+  Dotenv.load
+  access_token = ENV["ZOHOMAIL_ACCESS_TOKEN"]
+
+  if access_token.nil?
+    client_id = ENV["ZOHOMAIL_CLIENT_ID"]
+    client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
+    refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
+
+    unless client_id && client_secret && refresh_token
+      puts "Required variables missing in .env (CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN)"
+      exit 1
+    end
+
+    puts "Refreshing access token..."
+    auth = ZohomailClient::Auth.new(client_id: client_id, client_secret: client_secret)
+    token_resp = auth.refresh_access_token(refresh_token)
+    access_token = token_resp["access_token"]
+
+    unless access_token
+      puts "Failed to get access token: #{token_resp}"
+      exit 1
+    end
+  end
+
+  puts "Fetching accounts..."
+  url = "#{ZohomailClient::Client::BASE_URL}/accounts"
+  curl = Curl::Easy.new(url) do |c|
+    c.headers["Authorization"] = "Zoho-oauthtoken #{access_token}"
+    c.headers["Accept"] = "application/json"
+  end
+  curl.perform
+
+  if curl.response_code == 200
+    resp = JSON.parse(curl.body_str)
+    if resp["data"]
+      puts "Found Accounts:"
+      resp["data"].each do |acc|
+        puts "Account ID: #{acc["accountId"]}"
+        puts "Display Name: #{acc["displayName"]}"
+        puts "Email: #{acc["primaryEmailAddress"]}"
+        puts "-" * 20
+      end
+      puts "\nUpdate your .env ZOHOMAIL_USER_ID with one of the Account IDs above."
+    else
+      puts "Unexpected response: #{resp}"
+    end
+  else
+    puts "Error #{curl.response_code}: #{curl.body_str}"
+  end
+rescue => e
+  puts "Error: #{e.message}"
+end
