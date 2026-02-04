@@ -17,11 +17,13 @@ begin
 
   if response["data"] && response["data"].is_a?(Array)
     puts "Recent Emails:"
-    response["data"].each do |msg|
+    messages = response["data"].sort_by { |m| m["receivedTime"].to_i }.reverse
+    messages.each do |msg|
+      received_at = Time.at(msg["receivedTime"].to_i / 1000)
       puts "ID: #{msg["messageId"]}"
       puts "From: #{msg["sender"]}"
       puts "Subject: #{msg["subject"]}"
-      puts "Date: #{msg["receivedTime"]}"
+      puts "Date: #{received_at.strftime("%Y-%m-%d %H:%M:%S")}"
       puts "Folder ID: #{msg["folderId"]}"
       puts "-" * 40
     end
