@@ -4,6 +4,7 @@ require "zohomail_client"
 require "dotenv"
 require "optparse"
 require "json"
+require "html2text"
 
 Dotenv.load
 ZohomailClient.configure do |config|
@@ -23,6 +24,10 @@ OptionParser.new do |opts|
 
   opts.on("--format FORMAT", ["text", "json"], "Output format: text or json (default: text)") do |format|
     options[:format] = format
+  end
+
+  opts.on("--trim-html", "Convert HTML content to plain text") do
+    options[:trim_html] = true
   end
 
   opts.on("-h", "--help", "Show this help") do
@@ -54,7 +59,12 @@ begin
   end
   response = client.get_message_content(folder_id, message_id)
 
+  # Convert HTML to text if requested
   if response["data"] && response["data"].is_a?(Hash) && response["data"]["content"]
+    if options[:trim_html]
+      response["data"]["content"] = Html2Text.convert(response["data"]["content"])
+    end
+
     if format == "json"
       puts response["data"].to_json
     else
@@ -62,17 +72,6 @@ begin
       puts "-" * 40
       puts response["data"]["content"]
       puts "-" * 40
-    end
-  elsif response["data"] && response["data"].is_a?(Array)
-    # This shouldn't happen based on docs, but just in case
-    if format == "json"
-      puts response["data"].to_json
-    else
-      puts "Received unexpected Array format."
-      if response["data"].first && response["data"].first["content"]
-        puts "First item content:"
-        puts response["data"].first["content"]
-      end
     end
   else
     if format == "json"
