@@ -16,7 +16,7 @@ options = {
   format: "plaintext"
 }
 
-OptionParser.new do |opts|
+opt_parser = OptionParser.new do |opts|
   opts.banner = "Usage: zohomail-send [options]"
 
   opts.on("-t", "--to EMAIL", "Recipient email address") { |v| options[:to] = v }
@@ -25,15 +25,21 @@ OptionParser.new do |opts|
   opts.on("-f", "--from EMAIL", "Sender email address") { |v| options[:from] = v }
   opts.on("--format FORMAT", ["html", "plaintext"], "Email format (html or plaintext, default: plaintext)") { |v| options[:format] = v }
 
+  opts.on("--draft", "Send as draft") { options[:is_draft] = true }
+  opts.on("--reply-to ID", "Reply to a specific message ID") { |v| options[:reply_to_message_id] = v }
+
   opts.on("-h", "--help", "Show this help") do
     puts opts
     exit
   end
-end.parse!
+end
 
-if options[:to].nil? || options[:subject].nil? || options[:content].nil?
-  $stderr.puts "Error: Missing required parameters: to, subject, content"
-  $stderr.puts "Run 'zohomail-send -h' for help."
+opt_parser.parse!
+
+if options[:to].nil? || options[:content].nil? || (options[:subject].nil? && options[:reply_to_message_id].nil?)
+  $stderr.puts "Error: Missing required parameters: to, content."
+  $stderr.puts "Subject is required unless replying to a message.\n\n"
+  puts opt_parser
   exit 1
 end
 
@@ -49,11 +55,17 @@ begin
     subject: options[:subject],
     content: options[:content],
     from: options[:from],
-    mail_format: options[:format]
+    mail_format: options[:format],
+    is_draft: options[:is_draft],
+    reply_to_message_id: options[:reply_to_message_id]
   )
 
   if response.dig("status", "description") == "success"
-    puts "Email sent successfully!"
+    if options[:is_draft]
+      puts "Draft created successfully!"
+    else
+      puts "Email sent successfully!"
+    end
     puts "Message ID: #{response.dig("data", "messageId")}"
   else
     $stderr.puts "Error sending email: #{response}"

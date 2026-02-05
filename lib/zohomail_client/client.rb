@@ -23,20 +23,27 @@ module ZohomailClient
       perform_get(url)
     end
 
-    def send_email(to:, subject:, content:, from: nil, mail_format: "plaintext")
-      url = "#{BASE_URL}/accounts/#{@account_id}/messages"
+    def send_email(to:, content:, subject: nil, from: nil, mail_format: "plaintext", is_draft: false, reply_to_message_id: nil)
+      # If replying AND drafting, we must use the generic endpoint to ensure it's saved as draft
+      # instead of sent immediately. The 'reply' action on the message ID endpoint triggers sending.
+      if reply_to_message_id && !is_draft
+        url = "#{BASE_URL}/accounts/#{@account_id}/messages/#{reply_to_message_id}"
+      else
+        url = "#{BASE_URL}/accounts/#{@account_id}/messages"
+      end
 
       # Normalize newlines to CRLF for plaintext as recommended by Zoho API
       content = content.gsub(/\r?\n/, "\r\n") if mail_format == "plaintext"
 
       payload = {
-        fromAddress: from,
         toAddress: to,
-        subject: subject,
         content: content,
         mailFormat: mail_format
       }
-      payload.delete(:fromAddress) if from.nil?
+      payload[:fromAddress] = from if from
+      payload[:subject] = subject if subject
+      payload[:mode] = "draft" if is_draft
+      payload[:action] = "reply" if reply_to_message_id && !is_draft
 
       perform_post(url, payload)
     end
