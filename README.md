@@ -103,13 +103,38 @@ To see your folders and their IDs:
 ### 3. List Recent Emails
 
 ```bash
-./bin/zohomail-list [limit] [folder_id]
+./bin/zohomail-list [options]
+```
+
+Options:
+- `--limit LIMIT`: Number of emails to fetch (default: 10)
+- `--folder-id FOLDER_ID`: Folder ID to fetch from (default: from ZOHOMAIL_FOLDER_ID env)
+- `--format FORMAT`: Output format: text or json (default: text)
+- `--help`: Show help
+
+Examples:
+```bash
+./bin/zohomail-list
+./bin/zohomail-list --limit 20 --folder-id 123456789
+./bin/zohomail-list --format json
 ```
 
 ### 4. Fetch Email Content
 
 ```bash
-./bin/zohomail-get <folder_id> <message_id>
+./bin/zohomail-get [options] <message_id>
+```
+
+Options:
+- `--folder-id FOLDER_ID`: Folder ID (default: from ZOHOMAIL_FOLDER_ID env)
+- `--format FORMAT`: Output format: text or json (default: text)
+- `--help`: Show help
+
+Examples:
+```bash
+./bin/zohomail-get 987654321
+./bin/zohomail-get --folder-id 123456789 987654321
+./bin/zohomail-get --format json 987654321
 ```
 
 ### 5. Send Email
