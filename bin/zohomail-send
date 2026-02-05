@@ -12,7 +12,7 @@ ZohomailClient.configure do |config|
 end
 
 if ARGV.length < 3
-  $stderr.puts "Usage: zohomail-send <to> <subject> <content> [from]"
+  $stderr.puts "Usage: zohomail-send <to> <subject> <content> [from] [format: html|plaintext]"
   exit 1
 end
 
@@ -20,12 +20,13 @@ to = ARGV[0]
 subject = ARGV[1]
 content = ARGV[2]
 from = ARGV[3]
+mail_format = ARGV[4] || "plaintext"
 
 begin
   client = ZohomailClient.client
 
-  puts "Sending email to #{to}..."
-  response = client.send_email(to: to, subject: subject, content: content, from: from)
+  puts "Sending email to #{to} (format: #{mail_format})..."
+  response = client.send_email(to: to, subject: subject, content: content, from: from, mail_format: mail_format)
 
   if response.dig("status", "description") == "success"
     puts "Email sent successfully!"

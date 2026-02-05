@@ -23,14 +23,16 @@ module ZohomailClient
       perform_get(url)
     end
 
-    def send_email(to:, subject:, content:, from: nil)
+    def send_email(to:, subject:, content:, from: nil, mail_format: "plaintext")
       url = "#{BASE_URL}/accounts/#{@account_id}/messages"
       payload = {
+        fromAddress: from,
         toAddress: to,
         subject: subject,
-        content: content
+        content: content,
+        mailFormat: mail_format
       }
-      payload[:fromAddress] = from if from
+      payload.delete(:fromAddress) if from.nil?
 
       perform_post(url, payload)
     end
