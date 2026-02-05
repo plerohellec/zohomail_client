@@ -26,7 +26,7 @@ end.parse!
 
 message_id = ARGV.shift
 unless message_id
-  puts "Error: message_id is required"
+  $stderr.puts "Error: message_id is required"
   puts "Usage: zohomail-get [options] <message_id>"
   exit 1
 end
@@ -42,7 +42,9 @@ end
 begin
   client = ZohomailClient.client_from_env
 
-  puts "Fetching content for message #{message_id} in folder #{folder_id}..."
+  unless format == "json"
+    puts "Fetching content for message #{message_id} in folder #{folder_id}..."
+  end
   response = client.get_message_content(folder_id, message_id)
 
   if response["data"] && response["data"].is_a?(Hash) && response["data"]["content"]
@@ -69,11 +71,11 @@ begin
     if format == "json"
       puts {}.to_json
     else
-      puts "Error or no content found: #{response}"
+      $stderr.puts "Error or no content found: #{response}"
     end
     exit 1
   end
 rescue ZohomailClient::Error => e
-  puts "Error: #{e.message}"
+  $stderr.puts "Error: #{e.message}"
   exit 1
 end

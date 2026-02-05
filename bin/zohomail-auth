@@ -6,7 +6,7 @@ Dotenv.load
 
 grant_token = ARGV[0]
 if grant_token.nil?
-  puts "Usage: zohomail-auth <grant_token>"
+  $stderr.puts "Usage: zohomail-auth <grant_token>"
   exit 1
 end
 
@@ -14,7 +14,7 @@ client_id = ENV["ZOHOMAIL_CLIENT_ID"]
 client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
 
 if client_id.nil? || client_secret.nil?
-  puts "ZOHOMAIL_CLIENT_ID and ZOHOMAIL_CLIENT_SECRET must be in .env"
+  $stderr.puts "ZOHOMAIL_CLIENT_ID and ZOHOMAIL_CLIENT_SECRET must be in .env"
   exit 1
 end
 
@@ -38,6 +38,6 @@ if response["refresh_token"]
   File.write(env_path, env_content)
   puts "Updated .env with ZOHOMAIL_REFRESH_TOKEN"
 else
-  puts "Error obtaining tokens: #{response}"
+  $stderr.puts "Error obtaining tokens: #{response}"
   exit 1
 end

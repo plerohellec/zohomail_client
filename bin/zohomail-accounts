@@ -12,7 +12,7 @@ begin
     refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
 
     unless client_id && client_secret && refresh_token
-      puts "Required variables missing in .env (CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN)"
+      $stderr.puts "Required variables missing in .env (CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN)"
       exit 1
     end
 
@@ -22,7 +22,7 @@ begin
     access_token = token_resp["access_token"]
 
     unless access_token
-      puts "Failed to get access token: #{token_resp}"
+      $stderr.puts "Failed to get access token: #{token_resp}"
       exit 1
     end
   end
@@ -47,11 +47,11 @@ begin
       end
       puts "\nUpdate your .env ZOHOMAIL_USER_ID with one of the Account IDs above."
     else
-      puts "Unexpected response: #{resp}"
+      $stderr.puts "Unexpected response: #{resp}"
     end
   else
-    puts "Error #{curl.response_code}: #{curl.body_str}"
+    $stderr.puts "Error #{curl.response_code}: #{curl.body_str}"
   end
 rescue => e
-  puts "Error: #{e.message}"
+  $stderr.puts "Error: #{e.message}"
 end

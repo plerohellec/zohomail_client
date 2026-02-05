@@ -16,9 +16,9 @@ begin
       puts "ID: #{folder["folderId"]} - Name: #{folder["folderName"]}"
     end
   else
-    puts "No folders found or unexpected format: #{response}"
+    $stderr.puts "No folders found or unexpected format: #{response}"
   end
 rescue ZohomailClient::Error => e
-  puts "Error: #{e.message}"
+  $stderr.puts "Error: #{e.message}"
   exit 1
 end

@@ -35,7 +35,9 @@ format = options[:format] || "text"
 begin
   client = ZohomailClient.client_from_env
 
-  puts "Fetching recent emails (limit: #{limit}, folder: #{folder_id || 'all'})..."
+  unless format == "json"
+    puts "Fetching recent emails (limit: #{limit}, folder: #{folder_id || 'all'})..."
+  end
   response = client.list_messages(limit: limit, folder_id: folder_id)
 
   if response["data"] && response["data"].is_a?(Array)
@@ -63,6 +65,6 @@ begin
     end
   end
 rescue ZohomailClient::Error => e
-  puts "Error: #{e.message}"
+  $stderr.puts "Error: #{e.message}"
   exit 1
 end
