@@ -1,10 +1,17 @@
 #!/usr/bin/env ruby
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "zohomail_client"
+require "dotenv"
 require "optparse"
 require "json"
 
 Dotenv.load
+ZohomailClient.configure do |config|
+  config.client_id = ENV["ZOHOMAIL_CLIENT_ID"]
+  config.client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
+  config.refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
+  config.user_id = ENV["ZOHOMAIL_USER_ID"]
+end
 
 options = {}
 OptionParser.new do |opts|
@@ -33,7 +40,7 @@ folder_id = options[:folder_id] || ENV["ZOHOMAIL_FOLDER_ID"]
 format = options[:format] || "text"
 
 begin
-  client = ZohomailClient.client_from_env
+  client = ZohomailClient.client
 
   unless format == "json"
     puts "Fetching recent emails (limit: #{limit}, folder: #{folder_id || 'all'})..."

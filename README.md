@@ -26,16 +26,23 @@ ZOHOMAIL_FOLDER_ID=your_default_folder_id
 
 ### 1. Creating the Client
 
-The easiest way to create a client is from environment variables:
+First, configure the gem with your Zoho credentials:
 
 ```ruby
 require 'zohomail_client'
 
-# Automatically loads .env and refreshes the access token using ZOHOMAIL_REFRESH_TOKEN
-client = ZohomailClient.client_from_env
+ZohomailClient.configure do |config|
+  config.client_id = ENV['ZOHOMAIL_CLIENT_ID']
+  config.client_secret = ENV['ZOHOMAIL_CLIENT_SECRET']
+  config.refresh_token = ENV['ZOHOMAIL_REFRESH_TOKEN']
+  config.user_id = ENV['ZOHOMAIL_USER_ID']
+end
+
+# Refreshes the access token using the configuration and returns a client
+client = ZohomailClient.client
 ```
 
-Alternatively, you can provide the access token and user ID manually:
+Alternatively, you can provide the access token and user ID manually to create a client without a refresh token cycle:
 
 ```ruby
 client = ZohomailClient::Client.new(

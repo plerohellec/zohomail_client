@@ -1,6 +1,15 @@
 #!/usr/bin/env ruby
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "zohomail_client"
+require "dotenv"
+
+Dotenv.load
+ZohomailClient.configure do |config|
+  config.client_id = ENV["ZOHOMAIL_CLIENT_ID"]
+  config.client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
+  config.refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
+  config.user_id = ENV["ZOHOMAIL_USER_ID"]
+end
 
 if ARGV.length < 3
   $stderr.puts "Usage: zohomail-send <to> <subject> <content> [from]"
@@ -13,7 +22,7 @@ content = ARGV[2]
 from = ARGV[3]
 
 begin
-  client = ZohomailClient.client_from_env
+  client = ZohomailClient.client
 
   puts "Sending email to #{to}..."
   response = client.send_email(to: to, subject: subject, content: content, from: from)
