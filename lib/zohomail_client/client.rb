@@ -25,6 +25,10 @@ module ZohomailClient
 
     def send_email(to:, subject:, content:, from: nil, mail_format: "plaintext")
       url = "#{BASE_URL}/accounts/#{@account_id}/messages"
+
+      # Normalize newlines to CRLF for plaintext as recommended by Zoho API
+      content = content.gsub(/\r?\n/, "\r\n") if mail_format == "plaintext"
+
       payload = {
         fromAddress: from,
         toAddress: to,

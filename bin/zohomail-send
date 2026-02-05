@@ -2,6 +2,7 @@
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "zohomail_client"
 require "dotenv"
+require "optparse"
 
 Dotenv.load
 ZohomailClient.configure do |config|
@@ -11,22 +12,45 @@ ZohomailClient.configure do |config|
   config.account_id = ENV["ZOHOMAIL_ACCOUNT_ID"]
 end
 
-if ARGV.length < 3
-  $stderr.puts "Usage: zohomail-send <to> <subject> <content> [from] [format: html|plaintext]"
+options = {
+  format: "plaintext"
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: zohomail-send [options]"
+
+  opts.on("-t", "--to EMAIL", "Recipient email address") { |v| options[:to] = v }
+  opts.on("-s", "--subject SUBJECT", "Email subject") { |v| options[:subject] = v }
+  opts.on("-c", "--content CONTENT", "Email content (interprets \\n as newline)") { |v| options[:content] = v }
+  opts.on("-f", "--from EMAIL", "Sender email address") { |v| options[:from] = v }
+  opts.on("--format FORMAT", ["html", "plaintext"], "Email format (html or plaintext, default: plaintext)") { |v| options[:format] = v }
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+if options[:to].nil? || options[:subject].nil? || options[:content].nil?
+  $stderr.puts "Error: Missing required parameters: to, subject, content"
+  $stderr.puts "Run 'zohomail-send -h' for help."
   exit 1
 end
 
-to = ARGV[0]
-subject = ARGV[1]
-content = ARGV[2]
-from = ARGV[3]
-mail_format = ARGV[4] || "plaintext"
+# Interpret literal \n as actual newlines if present in content
+options[:content] = options[:content].gsub("\\n", "\n")
 
 begin
   client = ZohomailClient.client
 
-  puts "Sending email to #{to} (format: #{mail_format})..."
-  response = client.send_email(to: to, subject: subject, content: content, from: from, mail_format: mail_format)
+  puts "Sending email to #{options[:to]} (format: #{options[:format]})..."
+  response = client.send_email(
+    to: options[:to],
+    subject: options[:subject],
+    content: options[:content],
+    from: options[:from],
+    mail_format: options[:format]
+  )
 
   if response.dig("status", "description") == "success"
     puts "Email sent successfully!"
