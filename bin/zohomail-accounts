@@ -46,7 +46,7 @@ begin
         puts "Email: #{acc["primaryEmailAddress"]}"
         puts "-" * 20
       end
-      puts "\nUpdate your .env ZOHOMAIL_USER_ID with one of the Account IDs above."
+      puts "\nUpdate your .env ZOHOMAIL_ACCOUNT_ID with one of the Account IDs above."
     else
       $stderr.puts "Unexpected response: #{resp}"
     end

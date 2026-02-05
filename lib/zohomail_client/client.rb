@@ -2,29 +2,29 @@ module ZohomailClient
   class Client
     BASE_URL = "https://mail.zoho.com/api"
 
-    def initialize(access_token:, user_id:)
+    def initialize(access_token:, account_id:)
       @access_token = access_token
-      @user_id = user_id
+      @account_id = account_id
     end
 
     def list_messages(folder_id: nil, limit: 10)
-      url = "#{BASE_URL}/accounts/#{@user_id}/messages/view?limit=#{limit}"
+      url = "#{BASE_URL}/accounts/#{@account_id}/messages/view?limit=#{limit}"
       url += "&folderId=#{folder_id}" if folder_id
       perform_get(url)
     end
 
     def list_folders
-      url = "#{BASE_URL}/accounts/#{@user_id}/folders"
+      url = "#{BASE_URL}/accounts/#{@account_id}/folders"
       perform_get(url)
     end
 
     def get_message_content(folder_id, message_id)
-      url = "#{BASE_URL}/accounts/#{@user_id}/folders/#{folder_id}/messages/#{message_id}/content"
+      url = "#{BASE_URL}/accounts/#{@account_id}/folders/#{folder_id}/messages/#{message_id}/content"
       perform_get(url)
     end
 
     def send_email(to:, subject:, content:, from: nil)
-      url = "#{BASE_URL}/accounts/#{@user_id}/messages"
+      url = "#{BASE_URL}/accounts/#{@account_id}/messages"
       payload = {
         toAddress: to,
         subject: subject,

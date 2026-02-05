@@ -8,13 +8,13 @@ module ZohomailClient
   class Error < StandardError; end
 
   class Configuration
-    attr_accessor :client_id, :client_secret, :refresh_token, :user_id
+    attr_accessor :client_id, :client_secret, :refresh_token, :account_id
 
     def initialize
       @client_id = nil
       @client_secret = nil
       @refresh_token = nil
-      @user_id = nil
+      @account_id = nil
     end
   end
 
@@ -33,17 +33,17 @@ module ZohomailClient
       client_id = configuration.client_id
       client_secret = configuration.client_secret
       refresh_token = configuration.refresh_token
-      user_id = configuration.user_id
+      account_id = configuration.account_id
 
-      unless client_id && client_secret && refresh_token && user_id
-        raise Error, "ZohomailClient is not configured. Please use ZohomailClient.configure to set client_id, client_secret, refresh_token, and user_id."
+      unless client_id && client_secret && refresh_token && account_id
+        raise Error, "ZohomailClient is not configured. Please use ZohomailClient.configure to set client_id, client_secret, refresh_token, and account_id."
       end
 
       auth = Auth.new(client_id: client_id, client_secret: client_secret)
       token_resp = auth.refresh_access_token(refresh_token)
 
       if token_resp["access_token"]
-        Client.new(access_token: token_resp["access_token"], user_id: user_id)
+        Client.new(access_token: token_resp["access_token"], account_id: account_id)
       else
         raise Error, "Error refreshing access token: #{token_resp}"
       end

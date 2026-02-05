@@ -17,9 +17,9 @@ Create a `.env` file in the root directory (see `.env.example`):
 ```bash
 ZOHOMAIL_CLIENT_ID=your_client_id
 ZOHOMAIL_CLIENT_SECRET=your_client_secret
-ZOHOMAIL_USER_ID=your_user_id
+ZOHOMAIL_ACCOUNT_ID=your_account_id
 ZOHOMAIL_REFRESH_TOKEN=your_refresh_token
-ZOHOMAIL_FOLDER_ID=your_default_folder_id
+ZOHOMAIL_INBOX_FOLDER_ID=your_default_folder_id
 ```
 
 ## Library Usage
@@ -35,7 +35,7 @@ ZohomailClient.configure do |config|
   config.client_id = ENV['ZOHOMAIL_CLIENT_ID']
   config.client_secret = ENV['ZOHOMAIL_CLIENT_SECRET']
   config.refresh_token = ENV['ZOHOMAIL_REFRESH_TOKEN']
-  config.user_id = ENV['ZOHOMAIL_USER_ID']
+  config.account_id = ENV['ZOHOMAIL_ACCOUNT_ID']
 end
 
 # Refreshes the access token using the configuration and returns a client
@@ -47,7 +47,7 @@ Alternatively, you can provide the access token and user ID manually to create a
 ```ruby
 client = ZohomailClient::Client.new(
   access_token: 'your_access_token',
-  user_id: 'your_user_id'
+  account_id: 'your_account_id'
 )
 ```
 
@@ -115,7 +115,7 @@ To see your folders and their IDs:
 
 Options:
 - `--limit LIMIT`: Number of emails to fetch (default: 10)
-- `--folder-id FOLDER_ID`: Folder ID to fetch from (default: from ZOHOMAIL_FOLDER_ID env)
+- `--folder-id FOLDER_ID`: Folder ID to fetch from (default: from ZOHOMAIL_INBOX_FOLDER_ID env)
 - `--format FORMAT`: Output format: text or json (default: text)
 - `--help`: Show help
 
@@ -133,7 +133,7 @@ Examples:
 ```
 
 Options:
-- `--folder-id FOLDER_ID`: Folder ID (default: from ZOHOMAIL_FOLDER_ID env)
+- `--folder-id FOLDER_ID`: Folder ID (default: from ZOHOMAIL_INBOX_FOLDER_ID env)
 - `--format FORMAT`: Output format: text or json (default: text)
 - `--help`: Show help
 

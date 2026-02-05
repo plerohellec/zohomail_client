@@ -9,15 +9,13 @@ begin
     config.client_id = ENV["ZOHOMAIL_CLIENT_ID"]
     config.client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
     config.refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
-    config.user_id = ENV["ZOHOMAIL_USER_ID"]
+    config.account_id = ENV["ZOHOMAIL_ACCOUNT_ID"]
   end
 
   client = ZohomailClient.client
 
   puts "Fetching folders..."
   response = client.list_folders
-
-  # puts "DEBUG Response: #{response.inspect}"
 
   if response["data"] && response["data"].is_a?(Array)
     puts "Folders:"

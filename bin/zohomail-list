@@ -10,7 +10,7 @@ ZohomailClient.configure do |config|
   config.client_id = ENV["ZOHOMAIL_CLIENT_ID"]
   config.client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
   config.refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
-  config.user_id = ENV["ZOHOMAIL_USER_ID"]
+  config.account_id = ENV["ZOHOMAIL_ACCOUNT_ID"]
 end
 
 options = {}
@@ -21,7 +21,7 @@ OptionParser.new do |opts|
     options[:limit] = limit
   end
 
-  opts.on("--folder-id FOLDER_ID", "Folder ID to fetch from (default: from ZOHOMAIL_FOLDER_ID env)") do |folder_id|
+  opts.on("--folder-id FOLDER_ID", "Folder ID to fetch from (default: from ZOHOMAIL_INBOX_FOLDER_ID env)") do |folder_id|
     options[:folder_id] = folder_id
   end
 
@@ -36,7 +36,7 @@ OptionParser.new do |opts|
 end.parse!
 
 limit = options[:limit] || 10
-folder_id = options[:folder_id] || ENV["ZOHOMAIL_FOLDER_ID"]
+folder_id = options[:folder_id] || ENV["ZOHOMAIL_INBOX_FOLDER_ID"]
 format = options[:format] || "text"
 
 begin
