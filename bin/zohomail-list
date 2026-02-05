@@ -1,35 +1,66 @@
 #!/usr/bin/env ruby
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "zohomail_client"
+require "optparse"
+require "json"
 
-if ARGV[0] == "--help"
-  puts "Usage: zohomail-list [limit] [folder_id]"
-  puts "If folder_id is not provided, it uses ZOHOMAIL_FOLDER_ID from .env"
-  exit 0
-end
+Dotenv.load
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: zohomail-list [options]"
+
+  opts.on("--limit LIMIT", Integer, "Number of emails to fetch (default: 10)") do |limit|
+    options[:limit] = limit
+  end
+
+  opts.on("--folder-id FOLDER_ID", "Folder ID to fetch from (default: from ZOHOMAIL_FOLDER_ID env)") do |folder_id|
+    options[:folder_id] = folder_id
+  end
+
+  opts.on("--format FORMAT", ["text", "json"], "Output format: text or json (default: text)") do |format|
+    options[:format] = format
+  end
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+limit = options[:limit] || 10
+folder_id = options[:folder_id] || ENV["ZOHOMAIL_FOLDER_ID"]
+format = options[:format] || "text"
 
 begin
-  limit = (ARGV[0] || 10).to_i
   client = ZohomailClient.client_from_env
-  folder_id = ARGV[1] || ENV["ZOHOMAIL_FOLDER_ID"]
 
   puts "Fetching recent emails (limit: #{limit}, folder: #{folder_id || 'all'})..."
   response = client.list_messages(limit: limit, folder_id: folder_id)
 
   if response["data"] && response["data"].is_a?(Array)
-    puts "Recent Emails:"
-    messages = response["data"].sort_by { |m| m["receivedTime"].to_i }.reverse
-    messages.each do |msg|
-      received_at = Time.at(msg["receivedTime"].to_i / 1000)
-      puts "ID: #{msg["messageId"]}"
-      puts "From: #{msg["sender"]}"
-      puts "Subject: #{msg["subject"]}"
-      puts "Date: #{received_at.strftime("%Y-%m-%d %H:%M:%S")}"
-      puts "Folder ID: #{msg["folderId"]}"
-      puts "-" * 40
+    if format == "json"
+      messages = response["data"].sort_by { |m| m["receivedTime"].to_i }.reverse
+      puts messages.to_json
+    else
+      puts "Recent Emails:"
+      messages = response["data"].sort_by { |m| m["receivedTime"].to_i }.reverse
+      messages.each do |msg|
+        received_at = Time.at(msg["receivedTime"].to_i / 1000)
+        puts "ID: #{msg["messageId"]}"
+        puts "From: #{msg["sender"]}"
+        puts "Subject: #{msg["subject"]}"
+        puts "Date: #{received_at.strftime("%Y-%m-%d %H:%M:%S")}"
+        puts "Folder ID: #{msg["folderId"]}"
+        puts "-" * 40
+      end
     end
   else
-    puts "No emails found or unexpected format."
+    if format == "json"
+      puts [].to_json
+    else
+      puts "No emails found or unexpected format."
+    end
   end
 rescue ZohomailClient::Error => e
   puts "Error: #{e.message}"
