@@ -2,6 +2,10 @@
 
 A simple Ruby gem to interact with the Zoho Mail API using OAuth2 and Curb.
 
+## Requierements
+
+Create a Zoho "Self client" app from https://api-console.zoho.com/ to get you client id, secret and grant token.
+
 ## Installation
 
 This gem is for internal use. To set up dependencies:
@@ -80,10 +84,41 @@ puts "Content: #{response['data']['content']}"
 ### 4. Sending an Email
 
 ```ruby
+# Send a new email
 client.send_email(
   to: "recipient@example.com",
   subject: "Hello from Ruby",
   content: "This is a test email sent via Zoho Mail API."
+)
+
+# Send with additional options
+client.send_email(
+  to: "recipient@example.com",
+  subject: "Hello from Ruby",
+  content: "This is a test email sent via Zoho Mail API.",
+  from: "sender@example.com",
+  mail_format: "html",
+  is_draft: true
+)
+```
+
+### 5. Sending an Email Reply
+
+```ruby
+# Reply to a message
+response = client.send_reply(
+  folder_id: "123456789",
+  message_id: "987654321",
+  content: "Thank you for your email."
+)
+
+# Reply with options
+response = client.send_reply(
+  folder_id: "123456789",
+  message_id: "987654321",
+  content: "Thank you for your email.",
+  mail_format: "html",
+  is_draft: true
 )
 ```
 
@@ -147,7 +182,43 @@ Examples:
 ### 5. Send Email
 
 ```bash
-./bin/zohomail-send <to> <subject> <content> [from]
+./bin/zohomail-send [options]
+```
+
+Options:
+- `-t, --to EMAIL`: Recipient email address (required)
+- `-s, --subject SUBJECT`: Email subject (required unless replying)
+- `-c, --content CONTENT`: Email content (interprets \n as newline, required)
+- `-f, --from EMAIL`: Sender email address
+- `--format FORMAT`: Email format: html or plaintext (default: plaintext)
+- `--draft`: Save as draft
+- `--reply-to ID`: Reply to a specific message ID
+- `-h, --help`: Show help
+
+Examples:
+```bash
+./bin/zohomail-send -t recipient@example.com -s "Hello" -c "Test email"
+./bin/zohomail-send -t recipient@example.com -s "Hello" -c "Test email" -f sender@example.com --format html
+```
+
+### 6. Reply to Email
+
+```bash
+./bin/zohomail-reply [options] <message_id>
+```
+
+Options:
+- `-c, --content CONTENT`: Reply content (interprets \n as newline)
+- `--folder-id ID`: Folder ID of the original message
+- `--format FORMAT`: Email format: html or plaintext (default: plaintext)
+- `--draft`: Save as draft
+- `-h, --help`: Show help
+
+Examples:
+```bash
+./bin/zohomail-reply -c "Thank you for your email." 987654321
+./bin/zohomail-reply --folder-id 123456789 -c "Thank you for your email." 987654321
+./bin/zohomail-reply --format html --draft -c "<p>Thank you for your email.</p>" 987654321
 ```
 
 ## Contributing

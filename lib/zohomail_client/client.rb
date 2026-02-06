@@ -39,6 +39,7 @@ module ZohomailClient
       # instead of sent immediately. The 'reply' action on the message ID endpoint triggers sending.
       if reply_to_message_id
         url = "#{BASE_URL}/accounts/#{@account_id}/messages/#{reply_to_message_id}"
+
         payload[:action] = "reply"
         if is_draft
           payload[:isSchedule] = 'true'
