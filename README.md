@@ -2,9 +2,10 @@
 
 A simple Ruby gem to interact with the Zoho Mail API using OAuth2 and Curb.
 
-## Requierements
+## Requirements
 
-Create a Zoho "Self client" app from https://api-console.zoho.com/ to get you client id, secret and grant token.
+Create a Zoho "Self client" app from https://api-console.zoho.com/ to get you client id and secret.
+Generate a grant token (aka "Code") with scopes ZohoMail.accounts.READ, ZohoMail.folders.READ, ZohoMail.messages.ALL.
 
 ## Installation
 
