@@ -23,6 +23,11 @@ module ZohomailClient
       perform_get(url)
     end
 
+    def get_message_meta_data(folder_id, message_id)
+      url = "#{BASE_URL}/accounts/#{@account_id}/folders/#{folder_id}/messages/#{message_id}/details"
+      perform_get(url)
+    end
+
     def send_email(to:, content:, subject: nil, from: nil, mail_format: "plaintext", is_draft: false, reply_to_message_id: nil)
       # If replying AND drafting, we must use the generic endpoint to ensure it's saved as draft
       # instead of sent immediately. The 'reply' action on the message ID endpoint triggers sending.
@@ -46,6 +51,25 @@ module ZohomailClient
       payload[:action] = "reply" if reply_to_message_id && !is_draft
 
       perform_post(url, payload)
+    end
+
+    def send_reply(folder_id:, message_id:, content:, mail_format: "plaintext", is_draft: false)
+      metadata = get_message_meta_data(folder_id, message_id)
+      data = metadata["data"]
+
+      subject = data["subject"]
+      subject = "Re: #{subject}" unless subject.downcase.start_with?("re:")
+
+      to = data["fromAddress"]
+
+      send_email(
+        to: to,
+        content: content,
+        subject: subject,
+        mail_format: mail_format,
+        is_draft: is_draft,
+        reply_to_message_id: message_id
+      )
     end
 
     private

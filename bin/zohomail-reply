@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "zohomail_client"
+require "dotenv"
+require "optparse"
+
+Dotenv.load
+ZohomailClient.configure do |config|
+  config.client_id = ENV["ZOHOMAIL_CLIENT_ID"]
+  config.client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
+  config.refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
+  config.account_id = ENV["ZOHOMAIL_ACCOUNT_ID"]
+end
+
+options = {
+  format: "plaintext"
+}
+
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: zohomail-reply [options] <message_id>"
+
+  opts.on("-c", "--content CONTENT", "Reply content (interprets \\n as newline)") { |v| options[:content] = v }
+  opts.on("--folder-id ID", "Folder ID of the original message") { |v| options[:folder_id] = v }
+  opts.on("--format FORMAT", ["html", "plaintext"], "Email format (html or plaintext, default: plaintext)") { |v| options[:format] = v }
+  opts.on("--draft", "Save as draft") { options[:is_draft] = true }
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end
+
+opt_parser.parse!
+
+message_id = ARGV.shift
+folder_id = options[:folder_id] || ENV["ZOHOMAIL_INBOX_FOLDER_ID"]
+
+if message_id.nil? || options[:content].nil? || folder_id.nil?
+  $stderr.puts "Error: message_id, content, and folder_id are required."
+  $stderr.puts "Provide folder_id via --folder-id or ZOHOMAIL_INBOX_FOLDER_ID environmental variable.\n\n"
+  puts opt_parser
+  exit 1
+end
+
+# Interpret literal \n as actual newlines if present in content
+options[:content] = options[:content].gsub("\\n", "\n")
+
+begin
+  client = ZohomailClient.client
+
+  puts "Replying to message #{message_id} in folder #{folder_id}..."
+  response = client.send_reply(
+    folder_id: folder_id,
+    message_id: message_id,
+    content: options[:content],
+    mail_format: options[:format],
+    is_draft: options[:is_draft]
+  )
+
+  if response.dig("status", "description") == "success"
+    if options[:is_draft]
+      puts "Reply draft created successfully!"
+    else
+      puts "Reply sent successfully!"
+    end
+    puts "Message ID: #{response.dig("data", "messageId")}"
+  else
+    $stderr.puts "Error sending reply: #{response}"
+    exit 1
+  end
+rescue ZohomailClient::Error => e
+  $stderr.puts "Error: #{e.message}"
+  exit 1
+end
