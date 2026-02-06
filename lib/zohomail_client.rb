@@ -8,13 +8,14 @@ module ZohomailClient
   class Error < StandardError; end
 
   class Configuration
-    attr_accessor :client_id, :client_secret, :refresh_token, :account_id
+    attr_accessor :client_id, :client_secret, :refresh_token, :account_id, :allow_send_mail
 
     def initialize
       @client_id = nil
       @client_secret = nil
       @refresh_token = nil
       @account_id = nil
+      @allow_send_mail = false
     end
   end
 
@@ -43,7 +44,7 @@ module ZohomailClient
       token_resp = auth.refresh_access_token(refresh_token)
 
       if token_resp["access_token"]
-        Client.new(access_token: token_resp["access_token"], account_id: account_id)
+        Client.new(access_token: token_resp["access_token"], account_id: account_id, allow_send_mail: configuration.allow_send_mail)
       else
         raise Error, "Error refreshing access token: #{token_resp}"
       end

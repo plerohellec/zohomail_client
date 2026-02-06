@@ -2,9 +2,10 @@ module ZohomailClient
   class Client
     BASE_URL = "https://mail.zoho.com/api"
 
-    def initialize(access_token:, account_id:)
+    def initialize(access_token:, account_id:, allow_send_mail: false)
       @access_token = access_token
       @account_id = account_id
+      @allow_send_mail = allow_send_mail
     end
 
     def list_messages(folder_id: nil, limit: 10)
@@ -29,6 +30,8 @@ module ZohomailClient
     end
 
     def send_email(to:, content:, subject: nil, from: nil, mail_format: "plaintext", is_draft: false, reply_to_message_id: nil)
+      is_draft = true unless @allow_send_mail
+
       payload = {
         toAddress: to,
         content: content,
@@ -43,7 +46,7 @@ module ZohomailClient
         payload[:action] = "reply"
         if is_draft
           payload[:isSchedule] = 'true'
-          payload[:scheduleType] = 2
+          payload[:scheduleType] = 5 # to be sent by the afternoon of the next day
           payload[:timeZone] = Time.now.getlocal.zone
         end
       else

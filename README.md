@@ -40,6 +40,7 @@ ZohomailClient.configure do |config|
   config.client_secret = ENV['ZOHOMAIL_CLIENT_SECRET']
   config.refresh_token = ENV['ZOHOMAIL_REFRESH_TOKEN']
   config.account_id = ENV['ZOHOMAIL_ACCOUNT_ID']
+  config.allow_send_mail = false  # Set to true to allow sending emails; false forces all emails as drafts (default: false)
 end
 
 # Refreshes the access token using the configuration and returns a client
