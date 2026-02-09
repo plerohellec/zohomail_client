@@ -78,7 +78,36 @@ response["data"].each do |message|
 end
 ```
 
-### 3. Fetching Message Content
+### 3. Searching Messages
+
+```ruby
+# Search for messages using Zoho Mail search syntax
+# See https://www.zoho.com/mail/help/search-syntax.html for search syntax details
+
+# Search for emails from a specific sender
+response = client.search_messages("sender:john@example.com", limit: 10)
+
+# Search for emails with specific subject
+response = client.search_messages("subject:meeting", limit: 10)
+
+# Search for emails with attachments
+response = client.search_messages("has:attachment", limit: 10)
+
+# Search with multiple criteria
+response = client.search_messages("from:john@example.com subject:project", limit: 10)
+
+# Search for exact phrase
+response = client.search_messages('entire:"Hello world"', limit: 10)
+
+response["data"].each do |message|
+  puts "Subject: #{message['subject']}"
+  puts "From: #{message['sender']}"
+  puts "ID: #{message['messageId']}"
+  puts "---"
+end
+```
+
+### 4. Fetching Message Content
 
 ```ruby
 # Fetch content using folder_name and message_id
@@ -87,7 +116,7 @@ response = client.get_message_content("Inbox", "987654321")
 puts "Content: #{response['data']['content']}"
 ```
 
-### 4. Sending an Email
+### 5. Sending an Email
 
 ```ruby
 # Send a new email
@@ -108,7 +137,7 @@ client.send_email(
 )
 ```
 
-### 5. Sending an Email Reply
+### 6. Sending an Email Reply
 
 ```ruby
 # Reply to a message
@@ -167,7 +196,36 @@ Examples:
 ./bin/zohomail-list --format json
 ```
 
-### 4. Fetch Email Content
+### 4. Search Emails
+
+```bash
+./bin/zohomail-search [options] <search_key>
+```
+
+Options:
+- `--limit LIMIT`: Number of emails to fetch (default: 10)
+- `--format FORMAT`: Output format: text or json (default: text)
+- `--help`: Show help
+
+Search Key Examples:
+- `sender:john@example.com` - Search by sender
+- `subject:meeting` - Search by subject
+- `has:attachment` - Emails with attachments
+- `has:flags` - Flagged emails
+- `entire:"Hello world"` - Exact phrase search
+- `from:john@example.com subject:project` - Multiple criteria
+
+Examples:
+```bash
+./bin/zohomail-search "sender:john@example.com"
+./bin/zohomail-search --limit 20 "subject:meeting"
+./bin/zohomail-search --format json "has:attachment"
+./bin/zohomail-search 'entire:"Hello world"'
+```
+
+See https://www.zoho.com/mail/help/search-syntax.html for more search syntax details.
+
+### 5. Fetch Email Content
 
 ```bash
 ./bin/zohomail-get [options] <message_id>
@@ -185,7 +243,7 @@ Examples:
 ./bin/zohomail-get --format json --folder-name Inbox 987654321
 ```
 
-### 5. Send Email
+### 6. Send Email
 
 ```bash
 ./bin/zohomail-send [options]
@@ -207,7 +265,7 @@ Examples:
 ./bin/zohomail-send -t recipient@example.com -s "Hello" -c "Test email" -f sender@example.com --format html
 ```
 
-### 6. Reply to Email
+### 7. Reply to Email
 
 ```bash
 ./bin/zohomail-reply [options] <message_id>

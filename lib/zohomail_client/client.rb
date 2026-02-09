@@ -1,4 +1,5 @@
 require 'time'
+require 'uri'
 
 module ZohomailClient
   class Client
@@ -16,6 +17,11 @@ module ZohomailClient
 
       url = "#{BASE_URL}/accounts/#{@account_id}/messages/view?limit=#{limit}"
       url += "&folderId=#{folder_id}" if folder_id
+      perform_get(url)
+    end
+
+    def search_messages(search_key, limit: 10)
+      url = "#{BASE_URL}/accounts/#{@account_id}/messages/search?searchKey=#{URI.encode_www_form_component(search_key)}&limit=#{limit}"
       perform_get(url)
     end
 

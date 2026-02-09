@@ -1,0 +1,91 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "zohomail_client"
+require "dotenv"
+require "optparse"
+require "json"
+
+Dotenv.load
+ZohomailClient.configure do |config|
+  config.client_id = ENV["ZOHOMAIL_CLIENT_ID"]
+  config.client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
+  config.refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
+  config.account_id = ENV["ZOHOMAIL_ACCOUNT_ID"]
+  config.cache_file_path = ENV["ZOHOMAIL_CACHE_FILE_PATH"]
+end
+
+options = {}
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: zohomail-search [options] <search_key>"
+
+  opts.on("--limit LIMIT", Integer, "Number of emails to fetch (default: 10)") do |limit|
+    options[:limit] = limit
+  end
+
+  opts.on("--format FORMAT", ["text", "json"], "Output format: text or json (default: text)") do |format|
+    options[:format] = format
+  end
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    puts ""
+    puts "Search Key Syntax Examples:"
+    puts "  sender:john@example.com              Search by sender"
+    puts "  subject:meeting                      Search by subject"
+    puts "  has:attachment                       Emails with attachments"
+    puts "  has:flags                            Flagged emails"
+    puts '  entire:"Hello world"                 Exact phrase search'
+    puts "  from:john@example.com subject:test   Multiple criteria"
+    puts ""
+    puts "See https://www.zoho.com/mail/help/search-syntax.html for more details"
+    exit
+  end
+end
+opt_parser.parse!
+
+search_key = ARGV[0]
+unless search_key
+  $stderr.puts "Error: search_key is required"
+  $stderr.puts opt_parser
+  exit 1
+end
+
+limit = options[:limit] || 10
+format = options[:format] || "text"
+
+begin
+  client = ZohomailClient.client
+
+  unless format == "json"
+    puts "Searching for: #{search_key} (limit: #{limit})..."
+  end
+  response = client.search_messages(search_key, limit: limit)
+
+  if response["data"] && response["data"].is_a?(Array)
+    if format == "json"
+      messages = response["data"].sort_by { |m| m["receivedTime"].to_i }.reverse
+      puts messages.to_json
+    else
+      puts "Search Results:"
+      messages = response["data"].sort_by { |m| m["receivedTime"].to_i }.reverse
+      messages.each do |msg|
+        received_at = Time.at(msg["receivedTime"].to_i / 1000)
+        puts "ID: #{msg["messageId"]}"
+        puts "From: #{msg["sender"]}"
+        puts "Subject: #{msg["subject"]}"
+        puts "Date: #{received_at.strftime("%Y-%m-%d %H:%M:%S")}"
+        puts "Folder ID: #{msg["folderId"]}"
+        puts "-" * 40
+      end
+    end
+  else
+    if format == "json"
+      puts [].to_json
+    else
+      puts "No emails found or unexpected format."
+    end
+  end
+rescue ZohomailClient::Error => e
+  $stderr.puts "Error: #{e.message}"
+  exit 1
+end
