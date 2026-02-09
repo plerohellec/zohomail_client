@@ -10,20 +10,21 @@ begin
     config.client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
     config.refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
     config.account_id = ENV["ZOHOMAIL_ACCOUNT_ID"]
+    config.cache_file_path = ENV["ZOHOMAIL_CACHE_FILE_PATH"]
   end
 
   client = ZohomailClient.client
 
   puts "Fetching folders..."
-  response = client.list_folders
+  folders = client.list_folders
 
-  if response["data"] && response["data"].is_a?(Array)
+  if folders && folders.is_a?(Array)
     puts "Folders:"
-    response["data"].each do |folder|
+    folders.each do |folder|
       puts "ID: #{folder["folderId"]} - Name: #{folder["folderName"]}"
     end
   else
-    $stderr.puts "No folders found or unexpected format: #{response}"
+    $stderr.puts "No folders found or unexpected format: #{folders}"
   end
 rescue ZohomailClient::Error => e
   $stderr.puts "Error: #{e.message}"

@@ -10,6 +10,7 @@ ZohomailClient.configure do |config|
   config.client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
   config.refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
   config.account_id = ENV["ZOHOMAIL_ACCOUNT_ID"]
+  config.cache_file_path = ENV["ZOHOMAIL_CACHE_FILE_PATH"]
 end
 
 options = {
@@ -20,7 +21,7 @@ opt_parser = OptionParser.new do |opts|
   opts.banner = "Usage: zohomail-reply [options] <message_id>"
 
   opts.on("-c", "--content CONTENT", "Reply content (interprets \\n as newline)") { |v| options[:content] = v }
-  opts.on("--folder-id ID", "Folder ID of the original message") { |v| options[:folder_id] = v }
+  opts.on("--folder-name NAME", "Folder name of the original message") { |v| options[:folder_name] = v }
   opts.on("--format FORMAT", ["html", "plaintext"], "Email format (html or plaintext, default: plaintext)") { |v| options[:format] = v }
   opts.on("--draft", "Save as draft") { options[:is_draft] = true }
 
@@ -33,11 +34,10 @@ end
 opt_parser.parse!
 
 message_id = ARGV.shift
-folder_id = options[:folder_id] || ENV["ZOHOMAIL_INBOX_FOLDER_ID"]
+folder_name = options[:folder_name]
 
-if message_id.nil? || options[:content].nil? || folder_id.nil?
-  $stderr.puts "Error: message_id, content, and folder_id are required."
-  $stderr.puts "Provide folder_id via --folder-id or ZOHOMAIL_INBOX_FOLDER_ID environmental variable.\n\n"
+if message_id.nil? || options[:content].nil? || folder_name.nil?
+  $stderr.puts "Error: message_id, content, and folder_name are required."
   puts opt_parser
   exit 1
 end
@@ -48,9 +48,9 @@ options[:content] = options[:content].gsub("\\n", "\n")
 begin
   client = ZohomailClient.client
 
-  puts "Replying to message #{message_id} in folder #{folder_id}..."
+  puts "Replying to message #{message_id} in folder #{folder_name}..."
   response = client.send_reply(
-    folder_id: folder_id,
+    folder_name: folder_name,
     message_id: message_id,
     content: options[:content],
     mail_format: options[:format],

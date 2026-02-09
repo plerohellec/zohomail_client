@@ -8,3 +8,5 @@
 /tmp/
 .env
 Gemfile.lock
+/.vscode/
+zoho_cache.json

@@ -1,33 +1,56 @@
+require 'time'
+
 module ZohomailClient
   class Client
     BASE_URL = "https://mail.zoho.com/api"
 
-    def initialize(access_token:, account_id:, allow_send_mail: false)
+    def initialize(access_token:, account_id:, allow_send_mail: false, cache_file_path: nil)
       @access_token = access_token
       @account_id = account_id
       @allow_send_mail = allow_send_mail
+      @cache_file_path = cache_file_path
     end
 
-    def list_messages(folder_id: nil, limit: 10)
+    def list_messages(folder_name: nil, limit: 10)
+      folder_id = resolve_folder_id(folder_name) if folder_name
+
       url = "#{BASE_URL}/accounts/#{@account_id}/messages/view?limit=#{limit}"
       url += "&folderId=#{folder_id}" if folder_id
       perform_get(url)
     end
 
     def list_folders
-      url = "#{BASE_URL}/accounts/#{@account_id}/folders"
-      perform_get(url)
+      response = perform_get(folders_url)
+      response.is_a?(Hash) ? response["data"] : response
     end
 
-    def get_message_content(folder_id, message_id)
+    def resolve_folder_id(folder_name)
+      return nil if folder_name.nil?
+      folder_id = cache.get_folder_id(folder_name)
+
+      if folder_id.nil?
+        # Fetch all folders, update cache, and try again
+        folders_response = fetch_folders_and_update_cache
+        folder = folders_response.find { |f| f["folderName"].downcase == folder_name.downcase }
+        raise Error, "Folder '#{folder_name}' not found." unless folder
+        folder_id = folder["folderId"]
+      end
+      folder_id
+    end
+
+    def get_message_content(folder_name, message_id)
+      folder_id = resolve_folder_id(folder_name)
       url = "#{BASE_URL}/accounts/#{@account_id}/folders/#{folder_id}/messages/#{message_id}/content"
       perform_get(url)
     end
 
-    def get_message_meta_data(folder_id, message_id)
+    def get_message_meta_data(folder_name, message_id)
+      folder_id = resolve_folder_id(folder_name)
       url = "#{BASE_URL}/accounts/#{@account_id}/folders/#{folder_id}/messages/#{message_id}/details"
       perform_get(url)
     end
+
+    private
 
     def send_email(to:, content:, subject: nil, from: nil, mail_format: "plaintext", is_draft: false, reply_to_message_id: nil)
       is_draft = true unless @allow_send_mail
@@ -66,8 +89,8 @@ module ZohomailClient
       perform_post(url, payload)
     end
 
-    def send_reply(folder_id:, message_id:, content:, from: nil, mail_format: "plaintext", is_draft: false)
-      metadata = get_message_meta_data(folder_id, message_id)
+    def send_reply(folder_name:, message_id:, content:, from: nil, mail_format: "plaintext", is_draft: false)
+      metadata = get_message_meta_data(folder_name, message_id)
       data = metadata["data"]
 
       subject = data["subject"]
@@ -129,6 +152,14 @@ module ZohomailClient
           raise Error, "Zoho API Error #{curl.response_code}: #{curl.body_str}"
         end
       end
+    end
+
+    def update_folder_cache(folder_data)
+      cache.update_folders(folder_data)
+    end
+
+    def cache
+      @cache ||= Cache.new(@cache_file_path || ZohomailClient.configuration.cache_file_path)
     end
   end
 end

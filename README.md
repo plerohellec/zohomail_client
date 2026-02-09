@@ -23,7 +23,7 @@ ZOHOMAIL_CLIENT_ID=your_client_id
 ZOHOMAIL_CLIENT_SECRET=your_client_secret
 ZOHOMAIL_ACCOUNT_ID=your_account_id
 ZOHOMAIL_REFRESH_TOKEN=your_refresh_token
-ZOHOMAIL_INBOX_FOLDER_ID=your_default_folder_id
+ZOHOMAIL_CACHE_FILE_PATH=./zoho_cache.json
 ```
 
 ## Library Usage
@@ -151,14 +151,14 @@ To see your folders and their IDs:
 
 Options:
 - `--limit LIMIT`: Number of emails to fetch (default: 10)
-- `--folder-id FOLDER_ID`: Folder ID to fetch from (default: from ZOHOMAIL_INBOX_FOLDER_ID env)
+- `--folder-name NAME`: Folder name to fetch from (e.g. Inbox)
 - `--format FORMAT`: Output format: text or json (default: text)
 - `--help`: Show help
 
 Examples:
 ```bash
 ./bin/zohomail-list
-./bin/zohomail-list --limit 20 --folder-id 123456789
+./bin/zohomail-list --limit 20 --folder-name "Trash"
 ./bin/zohomail-list --format json
 ```
 
@@ -169,15 +169,15 @@ Examples:
 ```
 
 Options:
-- `--folder-id FOLDER_ID`: Folder ID (default: from ZOHOMAIL_INBOX_FOLDER_ID env)
+- `--folder-name NAME`: Folder name (e.g. Inbox)
 - `--format FORMAT`: Output format: text or json (default: text)
 - `--help`: Show help
 
 Examples:
 ```bash
-./bin/zohomail-get 987654321
-./bin/zohomail-get --folder-id 123456789 987654321
-./bin/zohomail-get --format json 987654321
+./bin/zohomail-get --folder-name Inbox 987654321
+./bin/zohomail-get --folder-name "Sent" 987654321
+./bin/zohomail-get --format json --folder-name Inbox 987654321
 ```
 
 ### 5. Send Email
@@ -210,15 +210,15 @@ Examples:
 
 Options:
 - `-c, --content CONTENT`: Reply content (interprets \n as newline)
-- `--folder-id ID`: Folder ID of the original message
+- `--folder-name NAME`: Folder name of the original message
 - `--format FORMAT`: Email format: html or plaintext (default: plaintext)
 - `--draft`: Save as draft
 - `-h, --help`: Show help
 
 Examples:
 ```bash
-./bin/zohomail-reply -c "Thank you for your email." 987654321
-./bin/zohomail-reply --folder-id 123456789 -c "Thank you for your email." 987654321
+./bin/zohomail-reply --folder-name Inbox -c "Thank you for your email." 987654321
+./bin/zohomail-reply --folder-name "Sent" -c "Thank you for your email." 987654321
 ./bin/zohomail-reply --format html --draft -c "<p>Thank you for your email.</p>" 987654321
 ```
 

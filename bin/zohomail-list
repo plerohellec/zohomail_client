@@ -11,18 +11,19 @@ ZohomailClient.configure do |config|
   config.client_secret = ENV["ZOHOMAIL_CLIENT_SECRET"]
   config.refresh_token = ENV["ZOHOMAIL_REFRESH_TOKEN"]
   config.account_id = ENV["ZOHOMAIL_ACCOUNT_ID"]
+  config.cache_file_path = ENV["ZOHOMAIL_CACHE_FILE_PATH"]
 end
 
-options = {}
-OptionParser.new do |opts|
+options = { folder_name: "Inbox" }
+opt_parser = OptionParser.new do |opts|
   opts.banner = "Usage: zohomail-list [options]"
 
   opts.on("--limit LIMIT", Integer, "Number of emails to fetch (default: 10)") do |limit|
     options[:limit] = limit
   end
 
-  opts.on("--folder-id FOLDER_ID", "Folder ID to fetch from (default: from ZOHOMAIL_INBOX_FOLDER_ID env)") do |folder_id|
-    options[:folder_id] = folder_id
+  opts.on("--folder-name FOLDER_NAME", "Folder name to fetch from (default: Inbox)") do |folder_name|
+    options[:folder_name] = folder_name
   end
 
   opts.on("--format FORMAT", ["text", "json"], "Output format: text or json (default: text)") do |format|
@@ -33,19 +34,20 @@ OptionParser.new do |opts|
     puts opts
     exit
   end
-end.parse!
+end
+opt_parser.parse!
 
 limit = options[:limit] || 10
-folder_id = options[:folder_id] || ENV["ZOHOMAIL_INBOX_FOLDER_ID"]
+folder_name = options[:folder_name]
 format = options[:format] || "text"
 
 begin
   client = ZohomailClient.client
 
   unless format == "json"
-    puts "Fetching recent emails (limit: #{limit}, folder: #{folder_id || 'all'})..."
+    puts "Fetching recent emails (limit: #{limit}, folder: #{folder_name || 'all'})..."
   end
-  response = client.list_messages(limit: limit, folder_id: folder_id)
+  response = client.list_messages(limit: limit, folder_name: folder_name)
 
   if response["data"] && response["data"].is_a?(Array)
     if format == "json"

@@ -2,13 +2,14 @@ require "curb"
 require "json"
 require_relative "zohomail_client/version"
 require_relative "zohomail_client/auth"
+require_relative "zohomail_client/cache"
 require_relative "zohomail_client/client"
 
 module ZohomailClient
   class Error < StandardError; end
 
   class Configuration
-    attr_accessor :client_id, :client_secret, :refresh_token, :account_id, :allow_send_mail
+    attr_accessor :client_id, :client_secret, :refresh_token, :account_id, :allow_send_mail, :cache_file_path
 
     def initialize
       @client_id = nil
@@ -16,6 +17,7 @@ module ZohomailClient
       @refresh_token = nil
       @account_id = nil
       @allow_send_mail = false
+      @cache_file_path = nil
     end
   end
 
@@ -44,7 +46,12 @@ module ZohomailClient
       token_resp = auth.refresh_access_token(refresh_token)
 
       if token_resp["access_token"]
-        Client.new(access_token: token_resp["access_token"], account_id: account_id, allow_send_mail: configuration.allow_send_mail)
+        Client.new(
+          access_token: token_resp["access_token"],
+          account_id: account_id,
+          allow_send_mail: configuration.allow_send_mail,
+          cache_file_path: configuration.cache_file_path
+        )
       else
         raise Error, "Error refreshing access token: #{token_resp}"
       end
