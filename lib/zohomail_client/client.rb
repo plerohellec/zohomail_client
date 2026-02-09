@@ -156,6 +156,16 @@ module ZohomailClient
       cache.update_folders(folder_data)
     end
 
+    def fetch_folders_and_update_cache
+      folders = list_folders
+      update_folder_cache(folders)
+      folders
+    end
+
+    def folders_url
+      "#{BASE_URL}/accounts/#{@account_id}/folders"
+    end
+
     def cache
       @cache ||= Cache.new(@cache_file_path || ZohomailClient.configuration.cache_file_path)
     end
