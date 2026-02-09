@@ -27,7 +27,7 @@ Gem::Specification.new do |spec|
     end
   end
   spec.bindir = "bin"
-  spec.executables = ["zohomail-auth", "zohomail-list", "zohomail-get", "zohomail-send", "zohomail-reply", "zohomail-accounts", "zohomail-folders"]
+  spec.executables = ["zohomail-auth", "zohomail-list", "zohomail-get", "zohomail-send", "zohomail-reply", "zohomail-accounts", "zohomail-folders", "zohomail-search"]
   spec.require_paths = ["lib"]
 
   spec.add_dependency "curb", "~> 1.0"
