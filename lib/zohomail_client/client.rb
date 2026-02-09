@@ -50,8 +50,6 @@ module ZohomailClient
       perform_get(url)
     end
 
-    private
-
     def send_email(to:, content:, subject: nil, from: nil, mail_format: "plaintext", is_draft: false, reply_to_message_id: nil)
       is_draft = true unless @allow_send_mail
 

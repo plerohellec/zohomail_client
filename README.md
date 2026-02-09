@@ -27,6 +27,8 @@ ZOHOMAIL_REFRESH_TOKEN=your_refresh_token
 ZOHOMAIL_CACHE_FILE_PATH=./zoho_cache.json
 ```
 
+The `cache_file_path` is used to store folder IDs mapped to their names. This avoids fetching the full list of folders from Zoho on every request when using `folder_name` instead of `folder_id`.
+
 ## Library Usage
 
 ### 1. Creating the Client
@@ -41,6 +43,7 @@ ZohomailClient.configure do |config|
   config.client_secret = ENV['ZOHOMAIL_CLIENT_SECRET']
   config.refresh_token = ENV['ZOHOMAIL_REFRESH_TOKEN']
   config.account_id = ENV['ZOHOMAIL_ACCOUNT_ID']
+  config.cache_file_path = ENV['ZOHOMAIL_CACHE_FILE_PATH'] # Optional: Path to store folder ID cache
   config.allow_send_mail = false  # Set to true to allow sending emails; false forces all emails as drafts (default: false)
 end
 
@@ -53,7 +56,8 @@ Alternatively, you can provide the access token and user ID manually to create a
 ```ruby
 client = ZohomailClient::Client.new(
   access_token: 'your_access_token',
-  account_id: 'your_account_id'
+  account_id: 'your_account_id',
+  cache_file_path: './zoho_cache.json' # Optional
 )
 ```
 
@@ -64,7 +68,7 @@ client = ZohomailClient::Client.new(
 response = client.list_messages
 
 # List messages with options
-response = client.list_messages(folder_id: "123456789", limit: 5)
+response = client.list_messages(folder_name: "Inbox", limit: 5)
 
 response["data"].each do |message|
   puts "Subject: #{message['subject']}"
@@ -77,8 +81,8 @@ end
 ### 3. Fetching Message Content
 
 ```ruby
-# Fetch content using folder_id and message_id
-response = client.get_message_content("123456789", "987654321")
+# Fetch content using folder_name and message_id
+response = client.get_message_content("Inbox", "987654321")
 
 puts "Content: #{response['data']['content']}"
 ```
@@ -109,14 +113,14 @@ client.send_email(
 ```ruby
 # Reply to a message
 response = client.send_reply(
-  folder_id: "123456789",
+  folder_name: "Inbox",
   message_id: "987654321",
   content: "Thank you for your email."
 )
 
 # Reply with options
 response = client.send_reply(
-  folder_id: "123456789",
+  folder_name: "Inbox",
   message_id: "987654321",
   content: "Thank you for your email.",
   mail_format: "html",
