@@ -93,14 +93,14 @@ module ZohomailClient
       perform_post(url, payload)
     end
 
-    def send_reply(folder_name:, message_id:, content:, from: nil, mail_format: "plaintext", is_draft: false)
+    def send_reply(folder_name:, message_id:, content:, from: nil, mail_format: "plaintext", is_draft: false, to: nil)
       metadata = get_message_meta_data(folder_name, message_id)
       data = metadata["data"]
 
       subject = data["subject"]
       subject = "Re: #{subject}" unless subject.downcase.start_with?("re:")
 
-      to = data["fromAddress"]
+      to = to || data["fromAddress"]
 
       send_email(
         to: to,

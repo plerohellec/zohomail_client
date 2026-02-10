@@ -22,6 +22,7 @@ opt_parser = OptionParser.new do |opts|
 
   opts.on("-c", "--content CONTENT", "Reply content (interprets \\n as newline)") { |v| options[:content] = v }
   opts.on("--folder-name NAME", "Folder name of the original message") { |v| options[:folder_name] = v }
+  opts.on("--to EMAIL", "Recipient email address (optional, defaults to original sender)") { |v| options[:to] = v }
   opts.on("--format FORMAT", ["html", "plaintext"], "Email format (html or plaintext, default: plaintext)") { |v| options[:format] = v }
   opts.on("--draft", "Save as draft") { options[:is_draft] = true }
 
@@ -54,7 +55,8 @@ begin
     message_id: message_id,
     content: options[:content],
     mail_format: options[:format],
-    is_draft: options[:is_draft]
+    is_draft: options[:is_draft],
+    to: options[:to]
   )
 
   if response.dig("status", "description") == "success"
