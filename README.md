@@ -251,9 +251,10 @@ Examples:
 
 Options:
 - `-t, --to EMAIL`: Recipient email address (required)
+- `--cc EMAIL`: CC recipient email address (comma separated for multiple)
 - `-s, --subject SUBJECT`: Email subject (required unless replying)
 - `-c, --content CONTENT`: Email content (interprets \n as newline, required)
-- `-f, --from EMAIL`: Sender email address
+- `-f, --from EMAIL`: Sender email address (required)
 - `--format FORMAT`: Email format: html or plaintext (default: plaintext)
 - `--draft`: Save as draft
 - `--reply-to ID`: Reply to a specific message ID
@@ -261,8 +262,8 @@ Options:
 
 Examples:
 ```bash
-./bin/zohomail-send -t recipient@example.com -s "Hello" -c "Test email"
-./bin/zohomail-send -t recipient@example.com -s "Hello" -c "Test email" -f sender@example.com --format html
+./bin/zohomail-send -t recipient@example.com -s "Hello" -c "Test email" -f sender@example.com
+./bin/zohomail-send -t recipient@example.com --cc cc1@example.com,cc2@example.com -s "Hello" -c "Test email" -f sender@example.com --format html
 ```
 
 ### 7. Reply to Email
@@ -273,6 +274,7 @@ Examples:
 
 Options:
 - `-c, --content CONTENT`: Reply content (interprets \n as newline)
+- `--cc EMAIL`: CC recipient email address (comma separated for multiple)
 - `--folder-name NAME`: Folder name of the original message
 - `--format FORMAT`: Email format: html or plaintext (default: plaintext)
 - `--draft`: Save as draft
@@ -281,6 +283,7 @@ Options:
 Examples:
 ```bash
 ./bin/zohomail-reply --folder-name Inbox -c "Thank you for your email." 987654321
+./bin/zohomail-reply --folder-name Inbox --cc cc@example.com -c "Thank you for your email." 987654321
 ./bin/zohomail-reply --folder-name "Sent" -c "Thank you for your email." 987654321
 ./bin/zohomail-reply --format html --draft -c "<p>Thank you for your email.</p>" 987654321
 ```

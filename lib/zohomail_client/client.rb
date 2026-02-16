@@ -56,14 +56,15 @@ module ZohomailClient
       perform_get(url)
     end
 
-    def send_email(to:, content:, subject: nil, from: nil, mail_format: "plaintext", is_draft: false, reply_to_message_id: nil)
+    def send_email(to:, content:, cc: nil, subject: nil, from: nil, mail_format: "plaintext", is_draft: false, reply_to_message_id: nil)
       is_draft = true unless @allow_send_mail
 
       payload = {
         toAddress: to,
+        ccAddress: cc,
         content: content,
         mailFormat: mail_format
-      }
+      }.compact
 
       # If replying AND drafting, we must use the generic endpoint to ensure it's saved as draft
       # instead of sent immediately. The 'reply' action on the message ID endpoint triggers sending.
@@ -85,7 +86,7 @@ module ZohomailClient
       end
 
       # Normalize newlines to CRLF for plaintext as recommended by Zoho API
-      content = content.gsub(/\r?\n/, "\r\n") if mail_format == "plaintext"
+      payload[:content] = payload[:content].gsub(/\r?\n/, "\r\n") if mail_format == "plaintext"
 
       payload[:fromAddress] = from if from
       payload[:subject] = subject if subject
@@ -93,7 +94,7 @@ module ZohomailClient
       perform_post(url, payload)
     end
 
-    def send_reply(folder_name:, message_id:, content:, from: nil, mail_format: "plaintext", is_draft: false)
+    def send_reply(folder_name:, message_id:, content:, cc: nil, from: nil, mail_format: "plaintext", is_draft: false)
       metadata = get_message_meta_data(folder_name, message_id)
       data = metadata["data"]
 
@@ -104,6 +105,7 @@ module ZohomailClient
 
       send_email(
         to: to,
+        cc: cc,
         from: from,
         content: content,
         subject: subject,

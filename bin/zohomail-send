@@ -20,9 +20,10 @@ opt_parser = OptionParser.new do |opts|
   opts.banner = "Usage: zohomail-send [options]"
 
   opts.on("-t", "--to EMAIL", "Recipient email address") { |v| options[:to] = v }
+  opts.on("--cc EMAIL", "CC recipient email address (comma separated for multiple)") { |v| options[:cc] = v }
   opts.on("-s", "--subject SUBJECT", "Email subject") { |v| options[:subject] = v }
   opts.on("-c", "--content CONTENT", "Email content (interprets \\n as newline)") { |v| options[:content] = v }
-  opts.on("-f", "--from EMAIL", "Sender email address") { |v| options[:from] = v }
+  opts.on("-f", "--from EMAIL", "Sender email address (required)") { |v| options[:from] = v }
   opts.on("--format FORMAT", ["html", "plaintext"], "Email format (html or plaintext, default: plaintext)") { |v| options[:format] = v }
 
   opts.on("--draft", "Send as draft") { options[:is_draft] = true }
@@ -36,9 +37,15 @@ end
 
 opt_parser.parse!
 
-if options[:to].nil? || options[:content].nil? || (options[:subject].nil? && options[:reply_to_message_id].nil?)
-  $stderr.puts "Error: Missing required parameters: to, content."
-  $stderr.puts "Subject is required unless replying to a message.\n\n"
+missing = []
+missing << "to" if options[:to].nil?
+missing << "from" if options[:from].nil?
+missing << "content" if options[:content].nil?
+subject_missing = options[:subject].nil? && options[:reply_to_message_id].nil?
+if !missing.empty? || subject_missing
+  missing << "subject" if subject_missing
+  $stderr.puts "Error: Missing required parameter#{'s' if missing.size > 1}: #{missing.join(', ')}."
+  $stderr.puts "Subject is required unless replying to a message.\n\n" if subject_missing
   puts opt_parser
   exit 1
 end
@@ -52,6 +59,7 @@ begin
   puts "Sending email to #{options[:to]} (format: #{options[:format]})..."
   response = client.send_email(
     to: options[:to],
+    cc: options[:cc],
     subject: options[:subject],
     content: options[:content],
     from: options[:from],
