@@ -155,6 +155,14 @@ response = client.send_reply(
   mail_format: "html",
   is_draft: true
 )
+
+# Reply with custom recipient
+response = client.send_reply(
+  folder_name: "Inbox",
+  message_id: "987654321",
+  content: "Thank you for your email.",
+  to: "custom@example.com"
+)
 ```
 
 ## Command Line Usage
@@ -276,6 +284,7 @@ Options:
 - `-c, --content CONTENT`: Reply content (interprets \n as newline)
 - `--cc EMAIL`: CC recipient email address (comma separated for multiple)
 - `--folder-name NAME`: Folder name of the original message
+- `--to EMAIL`: Recipient email address (optional, defaults to original sender)
 - `--format FORMAT`: Email format: html or plaintext (default: plaintext)
 - `--draft`: Save as draft
 - `-h, --help`: Show help
@@ -286,6 +295,7 @@ Examples:
 ./bin/zohomail-reply --folder-name Inbox --cc cc@example.com -c "Thank you for your email." 987654321
 ./bin/zohomail-reply --folder-name "Sent" -c "Thank you for your email." 987654321
 ./bin/zohomail-reply --format html --draft -c "<p>Thank you for your email.</p>" 987654321
+./bin/zohomail-reply --to custom@example.com --folder-name Inbox -c "Thank you for your email." 987654321
 ```
 
 ## Contributing
