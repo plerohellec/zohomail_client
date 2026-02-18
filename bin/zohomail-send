@@ -22,7 +22,8 @@ opt_parser = OptionParser.new do |opts|
   opts.on("-t", "--to EMAIL", "Recipient email address") { |v| options[:to] = v }
   opts.on("--cc EMAIL", "CC recipient email address (comma separated for multiple)") { |v| options[:cc] = v }
   opts.on("-s", "--subject SUBJECT", "Email subject") { |v| options[:subject] = v }
-  opts.on("-c", "--content CONTENT", "Email content (interprets \\n as newline)") { |v| options[:content] = v }
+  opts.on("-c", "--content CONTENT", "Email content (interprets \\n as newline, must escape $ as \\$)") { |v| options[:content] = v }
+  opts.on("--content-file PATH", "Path to a file containing the email content") { |v| options[:content_file] = v }
   opts.on("-f", "--from EMAIL", "Sender email address (required)") { |v| options[:from] = v }
   opts.on("--format FORMAT", ["html", "plaintext"], "Email format (html or plaintext, default: plaintext)") { |v| options[:format] = v }
 
@@ -40,7 +41,7 @@ opt_parser.parse!
 missing = []
 missing << "to" if options[:to].nil?
 missing << "from" if options[:from].nil?
-missing << "content" if options[:content].nil?
+missing << "content" if options[:content].nil? && options[:content_file].nil?
 subject_missing = options[:subject].nil? && options[:reply_to_message_id].nil?
 if !missing.empty? || subject_missing
   missing << "subject" if subject_missing
@@ -50,8 +51,17 @@ if !missing.empty? || subject_missing
   exit 1
 end
 
-# Interpret literal \n as actual newlines if present in content
-options[:content] = options[:content].gsub("\\n", "\n")
+if options[:content_file]
+  if File.exist?(options[:content_file])
+    options[:content] = File.read(options[:content_file])
+  else
+    $stderr.puts "Error: Content file not found at #{options[:content_file]}"
+    exit 1
+  end
+elsif options[:content]
+  # Interpret literal \n as actual newlines if present in content
+  options[:content] = options[:content].gsub("\\n", "\n")
+end
 
 begin
   client = ZohomailClient.client

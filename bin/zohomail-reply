@@ -20,7 +20,8 @@ options = {
 opt_parser = OptionParser.new do |opts|
   opts.banner = "Usage: zohomail-reply [options] <message_id>"
 
-  opts.on("-c", "--content CONTENT", "Reply content (interprets \\n as newline)") { |v| options[:content] = v }
+  opts.on("-c", "--content CONTENT", "Reply content (interprets \\n as newline, must escape $ as \\$)") { |v| options[:content] = v }
+  opts.on("--content-file PATH", "Path to a file containing the reply content") { |v| options[:content_file] = v }
   opts.on("--cc EMAIL", "CC recipient email address (comma separated for multiple)") { |v| options[:cc] = v }
   opts.on("--folder-name NAME", "Folder name of the original message") { |v| options[:folder_name] = v }
   opts.on("--to EMAIL", "Recipient email address (optional, defaults to original sender)") { |v| options[:to] = v }
@@ -38,14 +39,23 @@ opt_parser.parse!
 message_id = ARGV.shift
 folder_name = options[:folder_name]
 
-if message_id.nil? || options[:content].nil? || folder_name.nil?
-  $stderr.puts "Error: message_id, content, and folder_name are required."
+if message_id.nil? || (options[:content].nil? && options[:content_file].nil?) || folder_name.nil?
+  $stderr.puts "Error: message_id, content (or content-file), and folder_name are required."
   puts opt_parser
   exit 1
 end
 
-# Interpret literal \n as actual newlines if present in content
-options[:content] = options[:content].gsub("\\n", "\n")
+if options[:content_file]
+  if File.exist?(options[:content_file])
+    options[:content] = File.read(options[:content_file])
+  else
+    $stderr.puts "Error: Content file not found at #{options[:content_file]}"
+    exit 1
+  end
+elsif options[:content]
+  # Interpret literal \n as actual newlines if present in content
+  options[:content] = options[:content].gsub("\\n", "\n")
+end
 
 begin
   client = ZohomailClient.client
