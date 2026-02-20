@@ -14,7 +14,8 @@ ZohomailClient.configure do |config|
 end
 
 options = {
-  format: "plaintext"
+  format: "plaintext",
+  skip_draft: false
 }
 
 opt_parser = OptionParser.new do |opts|
@@ -26,7 +27,7 @@ opt_parser = OptionParser.new do |opts|
   opts.on("--folder-name NAME", "Folder name of the original message") { |v| options[:folder_name] = v }
   opts.on("--to EMAIL", "Recipient email address (optional, defaults to original sender)") { |v| options[:to] = v }
   opts.on("--format FORMAT", ["html", "plaintext"], "Email format (html or plaintext, default: plaintext)") { |v| options[:format] = v }
-  opts.on("--draft", "Save as draft") { options[:is_draft] = true }
+  opts.on("--skip-draft", "Skip saving a draft and send immediately") { options[:skip_draft] = true }
 
   opts.on("-h", "--help", "Show this help") do
     puts opts
@@ -60,6 +61,9 @@ end
 begin
   client = ZohomailClient.client
 
+  # determine whether we should save a draft or send immediately
+  is_draft = !options[:skip_draft]
+
   puts "Replying to message #{message_id} in folder #{folder_name}..."
   response = client.send_reply(
     folder_name: folder_name,
@@ -67,12 +71,12 @@ begin
     content: options[:content],
     cc: options[:cc],
     mail_format: options[:format],
-    is_draft: options[:is_draft],
+    is_draft: is_draft,
     to: options[:to]
   )
 
   if response.dig("status", "description") == "success"
-    if options[:is_draft]
+    if is_draft
       puts "Reply draft created successfully!"
     else
       puts "Reply sent successfully!"

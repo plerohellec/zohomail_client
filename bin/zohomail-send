@@ -13,7 +13,8 @@ ZohomailClient.configure do |config|
 end
 
 options = {
-  format: "plaintext"
+  format: "plaintext",
+  skip_draft: false
 }
 
 opt_parser = OptionParser.new do |opts|
@@ -27,7 +28,7 @@ opt_parser = OptionParser.new do |opts|
   opts.on("-f", "--from EMAIL", "Sender email address (required)") { |v| options[:from] = v }
   opts.on("--format FORMAT", ["html", "plaintext"], "Email format (html or plaintext, default: plaintext)") { |v| options[:format] = v }
 
-  opts.on("--draft", "Send as draft") { options[:is_draft] = true }
+  opts.on("--skip-draft", "Skip creating a draft and send immediately") { options[:skip_draft] = true }
   opts.on("--reply-to ID", "Reply to a specific message ID") { |v| options[:reply_to_message_id] = v }
 
   opts.on("-h", "--help", "Show this help") do
@@ -66,6 +67,9 @@ end
 begin
   client = ZohomailClient.client
 
+  # determine whether we should save a draft or send immediately
+  is_draft = !options[:skip_draft]
+
   puts "Sending email to #{options[:to]} (format: #{options[:format]})..."
   response = client.send_email(
     to: options[:to],
@@ -74,12 +78,12 @@ begin
     content: options[:content],
     from: options[:from],
     mail_format: options[:format],
-    is_draft: options[:is_draft],
+    is_draft: is_draft,
     reply_to_message_id: options[:reply_to_message_id]
   )
 
   if response.dig("status", "description") == "success"
-    if options[:is_draft]
+    if is_draft
       puts "Draft created successfully!"
     else
       puts "Email sent successfully!"

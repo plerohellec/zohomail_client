@@ -264,7 +264,7 @@ Options:
 - `-c, --content CONTENT`: Email content (interprets \n as newline, required)
 - `-f, --from EMAIL`: Sender email address (required)
 - `--format FORMAT`: Email format: html or plaintext (default: plaintext)
-- `--draft`: Save as draft
+- `--skip-draft`: Skip creating a draft and send immediately
 - `--reply-to ID`: Reply to a specific message ID
 - `-h, --help`: Show help
 
@@ -286,7 +286,7 @@ Options:
 - `--folder-name NAME`: Folder name of the original message
 - `--to EMAIL`: Recipient email address (optional, defaults to original sender)
 - `--format FORMAT`: Email format: html or plaintext (default: plaintext)
-- `--draft`: Save as draft
+- `--skip-draft`: Skip creating a draft and send immediately
 - `-h, --help`: Show help
 
 Examples:
@@ -294,7 +294,7 @@ Examples:
 ./bin/zohomail-reply --folder-name Inbox -c "Thank you for your email." 987654321
 ./bin/zohomail-reply --folder-name Inbox --cc cc@example.com -c "Thank you for your email." 987654321
 ./bin/zohomail-reply --folder-name "Sent" -c "Thank you for your email." 987654321
-./bin/zohomail-reply --format html --draft -c "<p>Thank you for your email.</p>" 987654321
+./bin/zohomail-reply --format html --skip-draft -c "<p>Thank you for your email.</p>" 987654321
 ./bin/zohomail-reply --to custom@example.com --folder-name Inbox -c "Thank you for your email." 987654321
 ```
 
