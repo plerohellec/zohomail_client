@@ -50,6 +50,15 @@ unless search_key
   exit 1
 end
 
+# Validate search_key format (e.g., sender:john@example.com, subject:meeting, has:attachment, etc.)
+# More complex keys like from:a@b.com subject:test or entire:"phrase" are also valid
+unless search_key =~ /^[a-z]+:[^ ]+/ || search_key =~ /^[a-z]+:"[^"]+"/
+  $stderr.puts "Error: Invalid search_key format: '#{search_key}'"
+  $stderr.puts "Format should be 'key:value' or 'key:\"phrase\"' (e.g., sender:john@example.com)"
+  $stderr.puts opt_parser
+  exit 1
+end
+
 limit = options[:limit] || 10
 format = options[:format] || "text"
 
